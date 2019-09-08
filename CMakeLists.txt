@@ -12,14 +12,22 @@ include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
+# OpenCV
+find_package(OpenCV REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
+link_directories(${OpenCV_LIBRARY_DIRS})
+
+# LOCATION OF GPD (LOCAL/SYSTEM)
+set( GPD_DIR $ENV{HOME}/local )
+
 ## System dependencies are found with CMake's conventions
-find_library(GPD_LIB NAMES gpd PATHS /usr/local/lib PATH_SUFFIXES lib NO_DEFAULT_PATH)
+find_library(GPD_LIB NAMES gpd PATHS /usr/local/lib ${GPD_DIR} PATH_SUFFIXES lib NO_DEFAULT_PATH)
 if (GPD_LIB)
   message(STATUS "Library GPD found in ${GPD_LIB}")
 else()
   message(FATAL_ERROR "Library GPD not found")
 endif()
-include_directories(${GPD_LIB_INCLUDE_DIR})
+include_directories(${GPD_LIB_INCLUDE_DIR} ${GPD_DIR}/include)
 message(STATUS "gpd_include_dir: ${GPD_LIB_INCLUDE_DIR}")
 
 set(CMAKE_CXX_FLAGS "-O3 -fopenmp -fPIC -Wno-deprecated -Wenum-compare -Wno-ignored-attributes -std=c++14")
