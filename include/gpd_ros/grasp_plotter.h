@@ -37,6 +37,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <visualization_msgs/Marker.h>
+#include <geometry_msgs/PoseArray.h>
 #include <visualization_msgs/MarkerArray.h>
 
 // GPG
@@ -69,6 +70,22 @@ public:
   void drawGrasps(const std::vector<std::unique_ptr<gpd::candidate::Hand>>& hands, const std::string& frame);
 
   /**
+   * \brief Save grasp poses to a file.
+   * \param markers
+   * \param robot_frame which marker frame to store
+   * \praam grasp_frame the frame that the grasps are in
+   * \param filename
+   */
+  void saveGrasps(const visualization_msgs::MarkerArray& markers, const std::string& robot_frame, const std::string& grasp_frame, const std::string& filename);
+
+  /**
+   * \brief Save grasp poses to a file.
+   * \param markers
+   * \param filename
+   */
+  void saveMarkers(const visualization_msgs::MarkerArray& markers, const std::string& filename);
+
+  /**
    * \brief Convert a list of grasps to a ROS message that can be published to rviz.
    * \param hands list of grasps
    * \param frame_id the name of the frame that the grasp is in
@@ -98,6 +115,11 @@ public:
   visualization_msgs::Marker createHandBaseMarker(const Eigen::Vector3d& start, const Eigen::Vector3d& end,
     const Eigen::Matrix3d& frame, double length, double height, int id, const std::string& frame_id);
 
+  void setStorageInfo(std::string object_name, std::string output_path, int max_grasps) {
+    object_name_ = object_name;
+    output_path_ = output_path;
+    max_grasps_ = max_grasps;
+  }
 
 private:
 
@@ -107,6 +129,10 @@ private:
   double hand_depth_;
   double finger_width_;
   double hand_height_;
+
+  std::string object_name_;
+  std::string output_path_;
+  int max_grasps_;
 };
 
 #endif /* GRASP_PLOTTER_H_ */

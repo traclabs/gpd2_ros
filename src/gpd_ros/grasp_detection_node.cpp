@@ -7,8 +7,8 @@ const int GraspDetectionNode::CLOUD_INDEXED = 1; ///< cloud with indices
 const int GraspDetectionNode::CLOUD_SAMPLES = 2; ///< cloud with (x,y,z) samples
 
 
-GraspDetectionNode::GraspDetectionNode(ros::NodeHandle& node) : has_cloud_(false), has_normals_(false),
-  size_left_cloud_(0), has_samples_(true), frame_(""), use_importance_sampling_(false)
+GraspDetectionNode::GraspDetectionNode(ros::NodeHandle& node, std::string object_name, std::string output_path, int max_grasps) : has_cloud_(false), has_normals_(false),
+  size_left_cloud_(0), has_samples_(true), frame_(""), use_importance_sampling_(false), object_name_(object_name), output_path_(output_path), max_grasps_(max_grasps)
 {
   printf("Init ....\n");
   cloud_camera_ = NULL;
@@ -27,6 +27,8 @@ GraspDetectionNode::GraspDetectionNode(ros::NodeHandle& node) : has_cloud_(false
 //  }
   std::string cfg_file;
   node.param("config_file", cfg_file, std::string(""));
+  printf("Config file: %s\n", cfg_file.c_str());
+
   grasp_detector_ = new gpd::GraspDetector(cfg_file);
   printf("Created GPD ....\n");
 
@@ -68,7 +70,7 @@ GraspDetectionNode::GraspDetectionNode(ros::NodeHandle& node) : has_cloud_(false
   grasps_pub_ = node.advertise<gpd_ros::GraspConfigList>("clustered_grasps", 10);
 
   rviz_plotter_ = new GraspPlotter(node, grasp_detector_->getHandSearchParameters().hand_geometry_);
-
+  rviz_plotter_->setStorageInfo(object_name_, output_path_, max_grasps_);
   node.getParam("workspace", workspace_);
 }
 
@@ -77,12 +79,13 @@ void GraspDetectionNode::run()
 {
   ros::Rate rate(100);
   ROS_INFO("Waiting for point cloud to arrive ...");
-
+  bool first = true;
   while (ros::ok()) {
-    if (has_cloud_) {
+    if (has_cloud_ && first) {
       // Detect grasps in point cloud.
       std::vector<std::unique_ptr<gpd::candidate::Hand>> grasps = detectGraspPoses();
 
+      ROS_WARN_STREAM("GraspDetectionNode() -- found " << grasps.size() << " grasps");
       // Visualize the detected grasps in rviz.
       if (use_rviz_) {
         rviz_plotter_->drawGrasps(grasps, frame_);
@@ -92,7 +95,8 @@ void GraspDetectionNode::run()
       has_cloud_ = false;
       has_samples_ = false;
       has_normals_ = false;
-      ROS_INFO("Waiting for point cloud to arrive ...");
+      first = false;
+      if (first) ROS_INFO("Waiting for point cloud to arrive ...");
     }
 
     ros::spinOnce();
@@ -121,7 +125,9 @@ std::vector<std::unique_ptr<gpd::candidate::Hand>> GraspDetectionNode::detectGra
 
     // detect grasps in the point cloud
     grasps = grasp_detector_->detectGrasps(*cloud_camera_);
+    ROS_WARN_STREAM("GraspDetectionNode::detectGraspPoses() -- found grasps");
   }
+  ROS_WARN_STREAM("GraspDetectionNode::detectGraspPoses() -- publishing selected grasps");
 
   // Publish the selected grasps.
   gpd_ros::GraspConfigList selected_grasps_msg = GraspMessages::createGraspListMsg(grasps, cloud_camera_header_);
@@ -299,7 +305,13 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "detect_grasps");
   ros::NodeHandle node("~");
 
-  GraspDetectionNode grasp_detection(node);
+  std::string object_name, output_path;
+  int max_grasps;
+  node.getParam("object_name", object_name);
+  node.getParam("output_path", output_path);
+  node.getParam("max_grasps", max_grasps);
+
+  GraspDetectionNode grasp_detection(node, object_name, output_path, max_grasps);
   grasp_detection.run();
 
   return 0;

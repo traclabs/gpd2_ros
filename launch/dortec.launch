@@ -1,0 +1,29 @@
+<launch>
+   
+  <arg name="object_name" default="long_bumper"/>
+  <arg name="output_path" default="$(find dortek_demo)/grasps" />
+  <arg name="max_grasps" default="-1"/>
+  
+
+  <node name="detect_grasps" pkg="gpd_ros" type="detect_grasps" output="screen">
+    <param name="object_name" value='$(arg object_name)'/>
+    <param name="output_path" value='$(arg output_path)'/>
+    <param name="max_grasps" value='$(arg max_grasps)'/>
+
+
+    <!-- What type of point cloud is used and what ROS topic it comes from -->
+    <param name="cloud_type" value="0" /> <!-- 0: PointCloud2, 1: CloudIndexed, 2: CloudSamples -->
+    <param name="cloud_topic" value="/cloud_stitched" />
+
+    <!-- (optional) The ROS topic that the samples come from (default: an empty string) -->
+    <param name="samples_topic" value="" />
+
+    <!-- Filepath to the configuration file for GPD -->
+    <!-- <param name="config_file" value="/home/ur5/projects/gpd/cfg/ros_eigen_params.cfg" /> -->
+    <param name="config_file" value="$(find dortek_demo)/config/gpd/dortec_gpd.cfg" />
+
+    <param name="rviz_topic" value="plot_grasps" />
+
+  </node>
+
+</launch>

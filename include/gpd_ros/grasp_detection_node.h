@@ -85,7 +85,7 @@ public:
    * \brief Constructor.
    * \param node the ROS node
   */
-  GraspDetectionNode(ros::NodeHandle& node);
+  GraspDetectionNode(ros::NodeHandle& node, std::string object_name, std::string output_path, int max_grasps);
 
   /**
    * \brief Destructor.
@@ -173,6 +173,9 @@ private:
   gpd::GraspDetector* grasp_detector_; ///< used to run the GPD algorithm
 //gpd::SequentialImportanceSampling* importance_sampling_; ///< sequential importance sampling variation of GPD algorithm
   GraspPlotter* rviz_plotter_; ///< used to plot detected grasps in rviz
+
+ std::string object_name_, output_path_;
+ int max_grasps_;
 
   /** constants for input point cloud types */
   static const int POINT_CLOUD_2; ///< sensor_msgs/PointCloud2
