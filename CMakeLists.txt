@@ -98,3 +98,5 @@ target_link_libraries(${PROJECT_NAME}_grasp_plotter
 target_link_libraries(${PROJECT_NAME}_grasp_messages
                       ${GPD_LIB}
                       ${catkin_LIBRARIES})
+add_dependencies(${PROJECT_NAME}_grasp_messages ${gpd_ros_EXPORTED_TARGETS})
+
