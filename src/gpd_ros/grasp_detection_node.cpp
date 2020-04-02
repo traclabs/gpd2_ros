@@ -89,6 +89,7 @@ void GraspDetectionNode::run()
       // Visualize the detected grasps in rviz.
       if (use_rviz_) {
         rviz_plotter_->drawGrasps(grasps, frame_);
+        break;
       }
 
       // Reset the system.
